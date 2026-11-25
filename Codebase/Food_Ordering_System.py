@@ -1,5 +1,4 @@
 # Menu dictionary jisme item ka naam (key) aur price (value) hai
-
 menu = {
     "Burger": 120,
     "Pizza": 250,
@@ -11,99 +10,119 @@ menu = {
 cart = []
 discount_applied = False
 
-# Menu Dikhana 
-def show_menu():
-    for item in menu:
-        print(item, "- Rs.", menu[item])
 
-# Cart Mein Item Dhundhna :
+# 1. Menu Dikhana
+def show_menu():
+    print("\n--- MENU ---")
+    for item in menu:
+        print(f"{item} - Rs. {menu[item]}")
+
+
+# 2. Cart Mein Item Dhundhna (index return karta hai, nahi mila toh -1)
 def find_in_cart(name):
     for i in range(len(cart)):
         if cart[i][0] == name:
             return i
     return -1
 
-# Subtotal nikalne k liye :
+
+# 3. Subtotal nikalne ke liye
 def calculate_subtotal():
-
     subtotal = 0
-
     for food in cart:
-
         item = food[0]
         quantity = food[1]
-
         price = menu[item]
-
         subtotal = subtotal + (price * quantity)
-
     return subtotal
 
-# Item add karna (validation ke saath):
+
+# 4. Item add karna (validation aur duplicate check ke saath)
 def add_item():
-
     show_menu()
-
     item = input("\nEnter food item name: ").strip().title()
 
-    # Item ki avalibality check krna:
+    # Item ki availability check karna
     if item not in menu:
         print("Sorry! This item is not available.")
         return
 
-    # Item ki quantity check karna :
+    # Item ki quantity check karna
     try:
         quantity = int(input("Enter quantity: "))
-
         if quantity <= 0:
             print("Quantity must be greater than zero.")
             return
-
     except ValueError:
         print("Please enter quantity in numbers.")
         return
 
-    # Item ko cart me add karna :
-    cart.append([item, quantity])
+    # Check karna ki item pehle se cart mein hai ya nahi
+    index = find_in_cart(item)
+    if index != -1:
+        cart[index][1] += quantity  # Purani quantity mein add kar diya
+    else:
+        cart.append([item, quantity])
 
-    print(item, "added to cart successfully!")
+    print(f"{item} (x{quantity}) added to cart successfully!")
 
-# Item hatana :
 
+# 5. Item hatana
 def remove_item():
+    if not cart:
+        print("Your cart is already empty.")
+        return
 
     item = input("Enter item name to remove: ").strip().title()
 
     for food in cart:
-
         if food[0] == item:
             cart.remove(food)
-            print(item, "removed successfully.")
+            print(f"{item} removed successfully.")
             return
 
     print("Item not found in cart.")
 
-# Coupon lagana or 10% discount: 
 
-def apply_coupon(code):
+# 6. Coupon lagana (10% discount)
+def apply_coupon():
     global discount_applied
+    code = input("Enter coupon code: ").strip().upper()
     if code == "SAVE10":
         discount_applied = True
-        print("Coupon applied!")
+        print("Coupon applied! 10% discount will be added at checkout.")
     else:
         print("Invalid coupon code. Only SAVE10 is accepted.")
 
 
-# Checkout (billing ka main part ):
+# 7. Item Search karna (Price ke saath)
+def search_item():
+    name = input("Enter item name to search: ").strip().lower()
+    if not name:
+        print("Please enter a valid item name.")
+        return
 
+    found = False
+    for item in menu:
+        if name in item.lower():
+            print(f"{item} - Rs. {menu[item]}")
+            found = True
+
+    if not found:
+        print("Item not found.")
+
+
+# 8. Checkout (Billing ka main part)
 def checkout():
+    global discount_applied
+
     # Step 1: Check karna ki cart khali toh nahi hai
     if not cart:
         print("Your cart is empty! Please add items before checkout.")
         return
 
-    # Step 2: Subtotal calculate karna
-    subtotal = calculate_subtotal
+    # Step 2: Subtotal calculate karna (Yahan () lagaya gaya hai)
+    subtotal = calculate_subtotal()
 
     # Step 3: Discount calculate karna (10% agar SAVE10 laga hai)
     if discount_applied:
@@ -130,20 +149,44 @@ def checkout():
     # Step 6: Final Total nikalna
     total = amount_after_discount + gst + delivery
 
-    # Step 7: Bill print karna (Exact Test Case format mein)
+    # Step 7: Bill print karna
+    print("\n--- FINAL BILL ---")
     print(f"Subtotal: {subtotal:.2f} | {discount_text}")
     print(f"GST (5%): {gst:.2f} | Delivery: {delivery_text}")
     print(f"Total: {total:.2f}")
 
+    # Order complete hone ke baad cart aur discount reset karna
+    cart.clear()
+    discount_applied = False
 
-# Main Menu loop :  (Program ko baar baar chlana jab tak customer exit select na kare)
 
-def search_item():
-    name = input("Enter item name to search: ").lower()
-    found = False
-    for item in menu:   
-        if name in item.lower():
-            print(item)
-            found = True
-    if not found:
-        print("Item not found.")
+# 9. Main Menu Loop
+while True:
+    print("\n=== FOOD ORDERING SYSTEM ===")
+    print("1. Show Menu")
+    print("2. Search Item")
+    print("3. Add Item to Cart")
+    print("4. Remove Item from Cart")
+    print("5. Apply Coupon")
+    print("6. Checkout")
+    print("7. Exit")
+
+    choice = input("Enter your choice (1-7): ").strip()
+
+    if choice == "1":
+        show_menu()
+    elif choice == "2":
+        search_item()
+    elif choice == "3":
+        add_item()
+    elif choice == "4":
+        remove_item()
+    elif choice == "5":
+        apply_coupon()
+    elif choice == "6":
+        checkout()
+    elif choice == "7":
+        print("Thank you for visiting! Goodbye.")
+        break
+    else:
+        print("Invalid choice! Please enter a number between 1 and 7.")
